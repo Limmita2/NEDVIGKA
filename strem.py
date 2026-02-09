@@ -164,6 +164,23 @@ def parse_pdf_file(uploaded_file):
                         "Кадастровий номер": cad_num,
                         "Опис об’єкта": obj_desc
                     }
+                    
+                    if relevant_b_match:
+                        b_start = relevant_b_match.end()
+                        b_end = len(block)
+                        if next_a_match:
+                            b_end = next_a_match.start()
+                        section_b_text = block[b_start:b_end]
+                        
+                        # Ищем "Розмір частки:" и "Дата, час державної реєстрації:" в том же разделе
+                        share = extract_field(section_b_text, "Розмір частки")
+                        if share and share != "1/1":
+                            obj_data["Розмір частки"] = share
+                        
+                        # Ищем "Дата, час державної реєстрації:" в том же разделе
+                        registration_date = extract_field(section_b_text, "Дата, час державної реєстрації")
+                        if registration_date:
+                            obj_data["Дата, час державної реєстрації"] = registration_date
                 else:
                     address = extract_field(section_a_text, "Адреса")
                     obj_desc = extract_field(section_a_text, "Опис об’єкта")
@@ -182,6 +199,11 @@ def parse_pdf_file(uploaded_file):
                         share = extract_field(section_b_text, "Розмір частки")
                         if share and share != "1/1":
                             obj_data["Розмір частки"] = share
+                        
+                        # Ищем "Дата, час державної реєстрації:" в том же разделе
+                        registration_date = extract_field(section_b_text, "Дата, час державної реєстрації")
+                        if registration_date:
+                            obj_data["Дата, час державної реєстрації"] = registration_date
 
                 if obj_data:
                     results.append(obj_data)
